@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="WxuserMapper">
+	
+	<!--表名 -->
+	<sql id="tableName">
+		t_wxuser
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+		OPENID,	
+		NICKNAME,	
+		AVATARURL,	
+		GENDER,	
+		CITY,	
+		PROVINCE,	
+		COUNTRY,	
+		CREATEDATE
+	</sql>
+	
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{OPENID},	
+		#{NICKNAME},	
+		#{AVATARURL},	
+		#{GENDER},	
+		#{CITY},	
+		#{PROVINCE},	
+		#{COUNTRY},	
+		now()
+	</sql>
+	
+	<!-- 新增-->
+	<insert id="save" parameterType="pd">
+		insert into 
+	<include refid="tableName"></include>
+		(
+	<include refid="Field"></include>
+		) values (
+	<include refid="FieldValue"></include>
+		)
+	</insert>
+	
+	<!-- 删除-->
+	<delete id="delete" parameterType="pd">
+		delete from
+		<include refid="tableName"></include>
+		where 
+			ID = #{ID}
+	</delete>
+	
+	<!-- 修改 -->
+	<update id="edit" parameterType="pd">
+		update
+		<include refid="tableName"></include>
+		set 
+			OPENID = #{OPENID},
+			NICKNAME = #{NICKNAME},
+			AVATARURL = #{AVATARURL},
+			GENDER = #{GENDER},
+			CITY = #{CITY},
+			PROVINCE = #{PROVINCE},
+			COUNTY = #{COUNTY},
+			CREATEDATE = #{CREATEDATE},
+		ID = ID
+		where 
+		ID = #{ID}
+	</update>
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select 
+		<include refid="Field"></include>,ID
+		from 
+		<include refid="tableName"></include>
+		where 
+			ID = #{ID}
+	</select>
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findByOpenid" parameterType="pd" resultType="pd">
+		select 
+		<include refid="Field"></include>,ID
+		from 
+		<include refid="tableName"></include>
+		where 
+			OPENID = #{OPENID}
+	</select>
+	
+	<!-- 列表 -->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		select
+		<include refid="Field"></include>,ID
+		from 
+		<include refid="tableName"></include>
+		where 1=1
+		<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
+			and
+				(
+				<!--	根据需求自己加检索条件
+					字段1 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
+					 or 
+					字段2 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%') 
+				-->
+				)
+		</if>
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>,ID
+		from 
+		<include refid="tableName"></include>
+	</select>
+	
+		
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from
+		<include refid="tableName"></include>
+		where 
+			ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+	
+	<!-- 列表(全部) -->
+	<select id="listSendZsk" parameterType="pd" resultType="pd">
+		select b.zsid,b.zstitle,b.sendday from  (
+			select zsid from t_zsk_send group by zsid
+		) a ,t_app_zs b where a.zsid=b.zsid and b.sendday>0
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listSendZskByzsid" parameterType="pd" resultType="pd">
+		select * from t_zsk_send where zsid=#{zsid}
+	</select>
+	<!-- 列表(全部) -->
+	<select id="listSendLogByzsid" parameterType="pd" resultType="pd">
+		select * from t_zsk_send_log where zsid=#{zsid} order by senddate desc limit 0,1
+	</select>
+	
+	<insert id="saveSendlog" parameterType="pd">
+		insert into 
+		t_zsk_send_log
+		(
+		zsid,openid,zstitle,senddate
+		) values (
+		#{zsid},#{openid},#{zstitle},now()
+		)
+	</insert>
+	
+	
+	<select id="listDictBytype" parameterType="pd" resultType="pd">
+		select * from t_sys_dict where dict_type=#{dict_type}
+	</select>
+	<select id="listDictByid" parameterType="pd" resultType="pd">
+		select * from t_sys_dict where dict_type=#{dict_type} and dict_id=#{dict_id}
+	</select>
+	
+	<!-- 351412933 -->
+</mapper>

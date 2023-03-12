@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppuserMapper">
+	
+	<!--表名 -->
+	<sql id="tableName">
+		
+	</sql>
+
+	
+	
+	<!-- 新增登录日志-->
+	<insert id="saveDriverLog" parameterType="pd">
+		insert into t_driver_log (
+			uid,driverid,user_name,opea_time,adtime,method,content
+		) values (
+			#{uid},#{driverId},#{user_name},#{opea_time},now(),#{method},#{content}
+		)
+	</insert>
+	
+	<!-- 新增登录日志-->
+	<insert id="saveLoginLog" parameterType="pd">
+	
+		insert into t_devuser_loginlog (
+			ucode,uname,issuccess,logindate,loginstr,ip
+		) values (
+			#{ucode},#{uname},#{issuccess},now(),#{loginstr},#{ip}
+		)
+	</insert>
+
+	<select id="findByUcode" parameterType="pd" resultType="pd">
+		select 
+		a.*,b.PHONE,b.EXCLUSIVENUM
+		from 
+		t_devuser a left join TB_PHONECONNECT b on  a.tel=b.PHONE
+		where 
+			ucode = #{ucode} 
+			<if test="upwd!= null and upwd != ''"><!-- 关键词检索 -->
+				and upwd=#{upwd}
+			</if>	
+			
+	</select>
+	
+	
+	
+	<select id="findSysnc" parameterType="pd" resultType="pd">
+		select 
+		a.*,b.PHONE,b.EXCLUSIVENUM
+		from 
+		t_devuser a left join TB_PHONECONNECT b on  a.tel=b.PHONE
+		where 1=1
+			<if test="ucode!= null and ucode != ''"><!-- 关键词检索 -->
+				and ucode = #{ucode}
+			</if> 
+			<if test="uid!= null and uid != ''"><!-- 关键词检索 -->
+				and uid = #{uid}
+			</if> 
+			<if test="openid!= null and openid != ''"><!-- 关键词检索 -->
+				and openid=#{openid}
+			</if>	
+			<if test="devid!= null and devid != ''"><!-- 关键词检索 -->
+				and devid=#{devid}
+			</if>	
+			
+	</select>
+	
+	<!-- 修改 -->
+	<update id="editOpenid" parameterType="pd">
+		update
+		t_devuser
+		set 
+			openid = #{openid}
+			<if test="devid!= null and devid != ''"><!-- 关键词检索 -->
+				,devid=#{devid}
+			</if>
+		where 
+		ucode = #{ucode}
+	</update>
+
+	<!-- 删除用户 -->
+	<delete id="deleteU" parameterType="pd">
+		delete from <include refid="tableName"></include> 
+		where 
+			"USER_ID" = #{USER_ID}
+	</delete>
+	
+	
+	<!-- 新增图片上传-->
+	<insert id="saveAppUploadFile" parameterType="pd">
+		insert into t_appUploadFile (
+			callRecPath,recTime,fileKey,uploadfile,czdate,userid,startLong
+			,callinout,driverId,callNumber,endLong,guid,endTime
+		) values (
+			#{callRecPath},#{recTime},#{fileKey},#{uploadfile},now(),#{userid},#{startLong}
+			,#{inout},#{driverId},#{callNumber},#{endLong},#{guid},#{endTime}
+		)
+	</insert>
+	
+	
+	<select id="getZskByid" parameterType="pd" resultType="pd">
+		select 
+			*
+		from 
+			t_app_zs
+		where 
+			zsid = #{zsid} 
+	</select>
+	
+	
+	<!-- 列表(全部) -->
+	<select id="listZskByzsid" parameterType="pd" resultType="pd">
+		select
+		 a.*,b.title,b.url
+		from 
+		t_zsk_cont a left  join t_print_model b on a.printid=b.id
+		where zsid = #{zsid} 
+	</select>
+
+	<!-- 列表(全部) -->
+	<select id="listQuestionByzsid" parameterType="pd" resultType="pd">
+		select
+		 a.*,b.zstitle
+		from 
+		t_zsk_question a left  join t_app_zs b on a.zsid=b.zsid
+		where a.zsid = #{zsid} 
+	</select>
+	
+	<select id="getZskcontByid" parameterType="pd" resultType="pd">
+		select 
+			a.*,b.zstitle
+		from 
+			t_zsk_cont a left  join t_app_zs b on a.zsid=b.zsid
+		where 
+			id = #{id} 
+	</select>
+	
+	
+	<select id="getSourceByid" parameterType="pd" resultType="pd">
+		select 
+			a.source as searchtemp,a.sourcetitle as cont
+		from 
+			t_bot_source a 
+		where 
+			id = #{id} 
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listZsidByfield" parameterType="pd" resultType="pd">
+	
+		
+		SELECT DISTINCT
+			a.zsid
+		FROM
+			t_zsk_send a
+		WHERE
+			1 = 1
+		<foreach collection="objList" item="obj">
+		AND EXISTS (
+			SELECT
+				1
+			FROM
+				t_zsk_send t
+			WHERE
+				t.zsid = a.zsid
+				AND 
+			
+			(
+					CASE
+					WHEN exists (select 1 from t_zsk_send s where s.zsid = a.zsid and s.field = #{obj.field}) THEN (t.field = #{obj.field}
+				AND 
+						(
+							CASE t.type
+							WHEN 0 THEN
+								#{obj.typevalue} BETWEEN t.startnum
+							AND t.endnum
+							ELSE
+								FIND_IN_SET(#{obj.typevalue}, t.typevalue)
+							END
+						))
+					ELSE
+						1 = 1
+					END
+				)
+			
+			
+			)
+		</foreach>
+		<if test="zsid!= null and zsid != ''"><!-- 关键词检索 -->
+			and a.zsid=#{zsid}
+		</if>		
+		
+	</select>
+	
+	<!-- FH QQ351412933-->
+	
+</mapper>

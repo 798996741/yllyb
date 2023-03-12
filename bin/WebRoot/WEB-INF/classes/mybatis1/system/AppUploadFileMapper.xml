@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppUploadFileMapper">
+	
+	<!--表名 -->
+	<sql id="tableName">
+		t_appUploadFile
+	</sql>
+	
+	<!-- 字段 -->
+	<sql id="Field">
+		callRecPath,recTime,fileKey,uploadfile,czdate,userid,startLong
+		,callinout,driverId,callNumber,endLong,guid,endTime
+	</sql>
+	
+	<!-- 字段值 -->
+	<sql id="FieldValue">
+		#{callRecPath},#{recTime},#{fileKey},#{uploadfile},now(),#{userid},#{startLong}
+			,#{inout},#{driverId},#{callNumber},#{endLong},#{guid},#{endTime}
+	</sql>
+	
+	
+	<!-- 通过ID获取数据 -->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select 
+		a.callRecPath,a.recTime,a.fileKey,a.uploadfile,a.czdate,a.userid,a.startLong
+		,a.callinout,a.driverId,a.callNumber,a.endLong,a.guid,a.endTime,a.id,(endlong-startLong)/1000 as lylong,b.uname
+		from 
+		<include refid="tableName"></include>  a left join t_devuser b on a.userid=b.uid
+		where 
+			a.ID = #{ID}
+	</select>
+	
+	<!-- 列表 -->
+	<select id="datalist" parameterType="page" resultType="pd">
+		select
+		a.callRecPath,a.recTime,a.fileKey,a.uploadfile,a.czdate,a.userid,a.startLong
+		,a.callinout,a.driverId,a.callNumber,a.endLong,a.guid,a.endTime,a.id,(endlong-startLong)/1000 as lylong,b.uname
+		from 
+		<include refid="tableName"></include> a left join t_devuser b on a.userid=b.uid
+		where 1=1
+		<if test="pd.keywords!= null and pd.keywords != ''"><!-- 关键词检索 -->
+			and
+				(
+				<!--	根据需求自己加检索条件
+					字段1 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%')
+					 or 
+					字段2 LIKE CONCAT(CONCAT('%', #{pd.keywords}),'%') 
+				-->
+				)
+		</if>
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>,ID
+		from 
+		<include refid="tableName"></include>
+	</select>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from
+		<include refid="tableName"></include>
+		where 
+			ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+	<!-- 351412933 -->
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="TagentStateMapper">
+
+	<resultMap type="TagentState" id="tagentStateResultMap">
+		<result column="AGENTEID" property="AGENTEID"/>
+		<result column="AGENTNAME" property="AGENTNAME"/>
+		<result column="STATE" property="STATE"/>
+		<result column="UTIME" property="UTIME"/>
+		<result column="JTL" property="JTL"/>
+	</resultMap>
+	
+	<!-- 判断用户名和密码 -->
+	<select id="tagentStatelistPage" parameterType="page" resultType="pd">
+		select AGENTID as AGENTEID,AGENTNAME,STATE,ROUND(TO_NUMBER(sysdate - updatetime) * 24 * 60 * 60) as UTIME
+		, nvl(b.cnt,0) as JTL from TAGENTSTATE a,(select count(*) cnt,zxid from tthjl_zxjtls where 
+		rq= #{pd.dqrq}  group by zxid) b 
+		where a.agenttype=1 and a.agentid = b.zxid(+)
+	</select>
+	
+	
+</mapper>

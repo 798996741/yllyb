@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppUploadFileMapper">
+	
+	<!--表名 t_appUploadFile-->
+	<sql id="tableName">
+		t_recording_track
+	</sql>
+	
+	<!-- 字段 callRecPath,recTime,fileKey,uploadfile,czdate,userid,startLong
+		,callinout,driverId,callNumber,endLong,guid,endTime -->
+	<sql id="Field">
+		ucid,
+		callid,
+		calling_no,
+		called_no,
+		ext_no,
+		agent_no,
+		start_time,
+		end_time,
+		file_name,
+		direction,
+		nucid,
+		type,
+		span,
+		skill_no,
+		vdn,
+		pfman,
+		score,
+		pfremark,
+		pfdate
+	</sql>
+	
+	<!-- 字段值 #{callRecPath},#{recTime},#{fileKey},#{uploadfile},now(),#{userid},#{startLong}
+			,#{inout},#{driverId},#{callNumber},#{endLong},#{guid},#{endTime}-->
+	<sql id="FieldValue">
+		#{ucid},
+		#{callid},
+		#{calling_no},
+		#{called_no},
+		#{ext_no},
+		#{agent_no},
+		#{start_time},
+		#{end_time},
+		#{file_name},
+		#{direction},
+		#{nucid},
+		#{type},
+		#{span},
+		#{skill_no},
+		#{vdn},
+		#{pfman},
+		#{score},
+		#{pfremark},
+		#{pfdate}
+	</sql>
+	
+	
+	<!-- 通过ID获取数据 a.callRecPath,a.recTime,a.fileKey,a.uploadfile,a.czdate,a.userid,a.startLong
+		,a.callinout,a.driverId,a.callNumber,a.endLong,a.guid,a.endTime,a.id,(endlong-startLong)/1000 as lylong,b.uname
+		from
+		<include refid="tableName"></include>  a left join t_devuser b on a.userid=b.uid
+		where
+			a.ID = #{ID}-->
+	<select id="findById" parameterType="pd" resultType="pd">
+		select
+		a.ucid,
+		a.callid,
+		a.calling_no,
+		a.called_no,
+		a.ext_no,
+		a.agent_no,
+		DATE_FORMAT(a.start_time,'%Y-%m-%d %H:%i:%s') start_time,
+		DATE_FORMAT(a.end_time,'%Y-%m-%d %H:%i:%s') end_time,
+		(end_time-start_time) lylong,
+		a.file_name,
+		a.direction,
+		a.nucid,
+		a.type,
+		a.span,
+		a.skill_no,
+		a.vdn,
+		a.pfman,
+		a.score,
+		a.pfremark,
+		a.pfdate
+		from
+		<include refid="tableName"></include>  a
+		where 
+			a.ID = #{ID}
+	</select>
+	
+	<!-- 列表
+	-->
+	<select id="datalistPage" parameterType="page" resultType="pd">
+		select
+		a.id,
+		a.ucid,
+		a.callid,
+		a.calling_no,
+		a.called_no,
+		a.ext_no,
+		a.agent_no,
+		DATE_FORMAT(a.start_time,'%Y-%m-%d %H:%i:%s') start_time,
+		DATE_FORMAT(a.end_time,'%Y-%m-%d %H:%i:%s') end_time,
+		(end_time-start_time) lylong,
+		a.file_name,
+		a.direction,
+		a.nucid,
+		a.type,
+		a.span,
+		a.skill_no,
+		a.vdn,
+		a.pfman,
+		a.score,
+		a.pfremark,
+		a.pfdate
+		from 
+		<include refid="tableName"></include> a
+		where 1=1
+		<if test="pd.lastStart!=null and pd.lastStart!=''"><!-- 开始时间检索 -->
+			and start_time &gt;= #{pd.lastStart}
+		</if>
+		<if test="pd.lastEnd!=null and pd.lastEnd!=''"><!-- 结束时间检索 -->
+			and end_time &lt;= #{pd.lastEnd}
+		</if>
+		<if test="pd.callNumber!= null and pd.callNumber != ''"><!-- 关键词检索 -->
+			and
+			(calling_no like CONCAT(CONCAT('%', #{pd.callNumber}),'%') or
+			called_no like CONCAT(CONCAT('%', #{pd.callNumber}),'%') or
+			ext_no like CONCAT(CONCAT('%', #{pd.callNumber}),'%'))
+		</if>
+		order by id desc
+	</select>
+	
+	
+	
+	<!-- 列表 -->
+	<select id="dataTj" parameterType="page" resultType="pd">
+		select
+		ext_no,DATE_FORMAT(start_time,'%Y-%m-%d') as rec,count(*) as count,cast(cast(sum(end_time-start_time) as DECIMAL(9,0))as char)  as allsum
+		from 
+		<include refid="tableName"></include>
+		where 1=1
+<!--		<if test="pd.uname!= null and pd.uname != ''">&lt;!&ndash; 关键词检索 &ndash;&gt;-->
+<!--			and-->
+<!--				(b.uname like CONCAT(CONCAT('%', #{pd.uname}),'%') or -->
+<!--				b.ucode like CONCAT(CONCAT('%', #{pd.uname}),'%')-->
+<!--				)-->
+<!--		</if>-->
+<!--		<if test="pd.ucode!= null and pd.ucode != ''">&lt;!&ndash; 关键词检索 &ndash;&gt;-->
+<!--			and-->
+<!--				b.ucode =#{pd.ucode}-->
+<!--		</if>-->
+<!--		<if test="pd.DEVUSERS!= null and pd.DEVUSERS != ''">&lt;!&ndash; 关键词检索 &ndash;&gt;-->
+<!--			and-->
+<!--				find_in_set(b.ucode,#{pd.DEVUSERS})-->
+<!--		</if>-->
+		<if test="pd.callNumber!= null and pd.callNumber != ''"><!-- 关键词检索 -->
+			and
+			(calling_no like CONCAT(CONCAT('%', #{pd.callNumber}),'%') or
+			called_no like CONCAT(CONCAT('%', #{pd.callNumber}),'%') or
+			ext_no like CONCAT(CONCAT('%', #{pd.callNumber}),'%'))
+		</if>
+		<if test="pd.lastStart!=null and pd.lastStart!=''"><!-- 开始时间检索 -->
+			and start_time &gt;= #{pd.lastStart}
+		</if>
+		<if test="pd.end_time!=null and pd.lastEnd!=''"><!-- 结束时间检索 -->
+			and end_time &lt;= #{pd.lastEnd}
+		</if>
+		group by ext_no,DATE_FORMAT(start_time,'%Y-%m-%d')
+		order by DATE_FORMAT(start_time,'%Y-%m-%d') desc
+		
+	</select>
+	
+	<!-- 列表 -->
+	<select id="dataCount" parameterType="pd" resultType="pd">
+		select
+		count(*) as count,cast(cast(sum(end_time-start_time) as DECIMAL(9,0))as char)  as allsum
+		from 
+		<include refid="tableName"></include> a
+		where 1=1
+		
+<!--		<if test="ucode!= null and ucode != ''">&lt;!&ndash; 关键词检索 &ndash;&gt;-->
+<!--			and-->
+<!--				b.ucode =#{ucode}-->
+<!--		</if>-->
+<!--		<if test="DEVUSERS!= null and DEVUSERS != ''">&lt;!&ndash; 关键词检索 &ndash;&gt;-->
+<!--			and-->
+<!--				find_in_set(b.ucode,#{DEVUSERS})-->
+<!--		</if>-->
+		
+		<if test="lastStart!=null and lastStart!=''"><!-- 开始时间检索 -->
+			and start_time &gt;= #{lastStart}
+		</if>
+		<if test="lastEnd!=null and lastEnd!=''"><!-- 结束时间检索 -->
+			and end_time &lt;= #{lastEnd}
+		</if>
+	</select>
+	
+	<!-- 列表(全部) -->
+	<select id="listAll" parameterType="pd" resultType="pd">
+		select
+		<include refid="Field"></include>,ID
+		from 
+		<include refid="tableName"></include>
+	</select>
+	
+	
+	<!-- 列表(全部) -->
+	<select id="listDevUsers" parameterType="pd" resultType="pd">
+		select
+		*
+		from 
+		t_devuser
+		where 1=1
+		<if test="ucode!= null and ucode != ''"><!-- 关键词检索 -->
+			and
+				ucode =#{ucode}
+		</if>
+		<if test="DEVUSERS!= null and DEVUSERS != ''"><!-- 关键词检索 -->
+			and
+				find_in_set(ucode,#{DEVUSERS})
+		</if>
+	</select>
+	
+	
+	<!-- 列表 -->
+	<select id="datalistDevUsers" parameterType="page" resultType="pd">
+		select
+		*
+		from 
+		t_devuser
+		where 1=1
+		<if test="pd.uname!= null and pd.uname != ''"><!-- 关键词检索 -->
+			and
+				(uname like CONCAT(CONCAT('%', #{pd.uname}),'%') or 
+				ucode like CONCAT(CONCAT('%', #{pd.uname}),'%')
+				)
+		</if>
+		<if test="pd.ucode!= null and pd.ucode != ''"><!-- 关键词检索 -->
+			and
+				ucode =#{pd.ucode}
+		</if>
+		
+		
+		<if test="pd.tel!= null and pd.tel != ''"><!-- 关键词检索 -->
+			and
+				tel like CONCAT(CONCAT('%', #{pd.tel}),'%')
+		</if>
+		<if test="pd.DEVUSERS!= null and pd.DEVUSERS != ''"><!-- 关键词检索 -->
+			and
+				find_in_set(ucode,#{pd.DEVUSERS})
+		</if>
+		order by czdate desc
+	</select>
+	
+	<!-- 批量删除 -->
+	<delete id="deleteAll" parameterType="String">
+		delete from
+		<include refid="tableName"></include>
+		where 
+			ID in
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                 #{item}
+		</foreach>
+	</delete>
+	
+	
+	<select id="findByUcode" parameterType="pd" resultType="pd">
+		select 
+		a.*,b.PHONE,b.EXCLUSIVENUM
+		from 
+		t_devuser a left join TB_PHONECONNECT b on  a.tel=b.PHONE
+		where 
+			ucode = #{ucode} 
+			<if test="upwd!= null and upwd != ''"><!-- 关键词检索 -->
+				and upwd=#{upwd}
+			</if>	
+			
+	</select>
+	
+	
+		
+	<select id="findByUid" parameterType="pd" resultType="pd">
+		select 
+		a.*,b.PHONE,b.EXCLUSIVENUM
+		from 
+		t_devuser a left join TB_PHONECONNECT b on  a.tel=b.PHONE
+		where 
+			uid = #{uid} 
+	</select>
+	
+	
+	<insert id="saveDevuser" parameterType="pd">
+		insert into t_devuser (
+			ucode,uname,czdate,czman,upwd,tel,yxdate,devid
+		) values (
+			#{ucode},#{uname},now(),#{czman},#{upwd},#{tel},#{yxdate},#{devid}
+		)
+	</insert>
+	
+	
+	<!-- 修改 -->
+	<update id="editDevuser" parameterType="pd">
+		update
+		t_devuser
+		set 
+			tel = #{tel},
+			uname = #{uname},
+			yxdate = #{yxdate},
+			devid = #{devid}
+			<if test="upwd!= null and upwd != ''"><!-- 关键词检索 -->
+				,upwd=#{upwd}
+			</if>
+		where 
+		uid = #{uid}
+	</update>
+	
+	<update id="bindDevuser" parameterType="pd">
+		update
+		t_devuser
+		set 
+			isbind =#{isbind},
+			binddate = now(),
+			bindman = #{bindman}
+		where 
+		uid = #{uid}
+	</update>
+
+    <select id="queryExtById" parameterType="pd" resultType="pd">
+        select
+          ID, Ext, type, virtual
+        from yllyb.t_recording_ext
+        <if test="ID != null and ID != ''">
+            where ID = #{ID}
+        </if>
+    </select>
+
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryExtAlllistPage" parameterType="Page" resultType="pd">
+        select
+        ID, Ext, type, virtual
+        from yllyb.t_recording_ext
+        where 1=1
+            <if test="pd.ext != null and pd.ext != ''">
+                and Ext = #{pd.ext}
+            </if>
+		order by ID desc
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertExt" parameterType="pd">
+        insert into yllyb.t_recording_ext(Ext,type,virtual)
+        values (#{ext},#{type},#{virtual})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="updateExt" parameterType="pd">
+        update yllyb.t_recording_ext
+        set
+
+                Ext = #{ext},
+                type = #{type},
+                virtual = #{virtual}
+
+
+        where ID = #{ID}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteExtById" parameterType="pd">
+        delete from yllyb.t_recording_ext where ID = #{id}
+    </delete>
+
+	<!-- 351412933 -->
+</mapper>

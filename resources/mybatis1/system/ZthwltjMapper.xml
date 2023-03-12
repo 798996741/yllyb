@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ZthwltjMapper">
+
+	<resultMap type="Zthwltj" id="zthwltjResultMap">
+		<result column="TJSJ" property="TJSJ"/>
+		<result column="DHZL" property="DHZL"/>
+		<result column="ZRGDHZL" property="ZRGDHZL"/>
+		<result column="IVRDHL" property="IVRDHL"/>
+		<result column="RGJTDHL" property="RGJTDHL"/>
+		<result column="ZXJTZL" property="ZXJTZL"/>
+		<result column="WJTDHL" property="WJTDHL"/>
+		<result column="JTL" property="JTL"/>
+		<result column="PJZLSJ" property="PJZLSJ"/>
+		
+		<result column="THZSJ" property="THZSJ"/>
+		<result column="PJTHSJ" property="PJTHSJ"/>
+		<result column="SHCLZSJ" property="SHCLZSJ"/>
+		<result column="PJCLSJ" property="PJCLSJ"/>
+	</resultMap>
+	
+	<!-- 判断用户名和密码 -->
+	<select id="zthwltjInfo" parameterType="pd" resultType="pd">
+		{
+         call pcx_zthwltj(
+               #{pd.pageno,mode=IN,jdbcType=NUMERIC},
+               #{pd.pagesize,mode=IN,jdbcType=NUMERIC},
+               #{pd.nfltj,mode=IN,jdbcType=NUMERIC},
+               #{pd.sksrq,mode=IN,jdbcType=DATE},
+               #{pd.sjsrq,mode=IN,jdbcType=DATE}
+         )
+      }
+		
+	</select>
+	
+	
+</mapper>

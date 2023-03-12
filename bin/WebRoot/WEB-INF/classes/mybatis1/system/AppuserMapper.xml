@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AppuserMapper">
+	
+	<!--表名 -->
+	<sql id="tableName">
+		
+	</sql>
+
+	
+	
+	<!-- 新增登录日志-->
+	<insert id="saveDriverLog" parameterType="pd">
+		insert into t_driver_log (
+			uid,driverid,user_name,opea_time,adtime,method,content
+		) values (
+			#{uid},#{driverId},#{user_name},#{opea_time},now(),#{method},#{content}
+		)
+	</insert>
+
+	<select id="findByUcode" parameterType="pd" resultType="pd">
+		select 
+		*
+		from 
+		t_devuser
+		where 
+			ucode = #{ucode} and upwd=#{upwd}
+	</select>
+
+	<!-- 删除用户 -->
+	<delete id="deleteU" parameterType="pd">
+		delete from <include refid="tableName"></include> 
+		where 
+			"USER_ID" = #{USER_ID}
+	</delete>
+	
+	
+	<!-- 新增图片上传-->
+	<insert id="saveAppUploadFile" parameterType="pd">
+		insert into t_appUploadFile (
+			callRecPath,recTime,fileKey,uploadfile,czdate,userid,startLong
+			,callinout,driverId,callNumber,endLong,guid,endTime
+		) values (
+			#{callRecPath},#{recTime},#{fileKey},#{uploadfile},now(),#{userid},#{startLong}
+			,#{inout},#{driverId},#{callNumber},#{endLong},#{guid},#{endTime}
+		)
+	</insert>
+
+	<!-- FH QQ351412933-->
+	
+</mapper>

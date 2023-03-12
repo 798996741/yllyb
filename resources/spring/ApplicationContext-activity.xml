@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd"
+	default-lazy-init="true">
+
+	<!-- 创建一个流程引擎的配置对象 -->
+	<bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+		<property name="dataSource" ref="dataSource" />
+		<property name="transactionManager" ref="transactionManager" />
+		<!-- 
+        databaseSchemaUpdate：允许在流程引擎启动和关闭时设置处理数据库模式的策略。  
+        false（默认）：创建流程引擎时检查数据库模式的版本是否与函数库要求的匹配，如果版本不匹配就会抛出异常。 
+        true：构建流程引擎时，执行检查，如果有必要会更新数据库模式。如果数据库模式不存在，就创建一个。 
+        create - 引擎启动时创建表；
+        create-drop：创建流程引擎时创建数据库模式，关闭流程引擎时删除数据库模式。
+        drop-create - 引擎启动时先删除表再重新创建表。
+     -->
+    	<property name="databaseSchemaUpdate" value="true" />
+		<!-- 是否启动jobExecutor -->
+		<property name="jobExecutorActivate" value="false" />
+		<!-- <property name="databaseSchema" value="ACT"/> -->
+		<!-- <property name="deploymentResources"> <list> <value>classpath:processes/MyProcess.bpmn</value> 
+			</list> </property> -->
+	</bean>
+
+	<!-- 创建一个流程引擎bean -->
+	<bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+		<property name="processEngineConfiguration" ref="processEngineConfiguration" />
+	</bean>
+
+	<!-- 创建activiti提供的各种服务 -->
+	<bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService" />
+	<bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService" />
+	<bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
+	<bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
+	<bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+	<bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService" />
+	<bean id="formService" factory-bean="processEngine" factory-method="getFormService" />
+</beans>
